@@ -5,11 +5,12 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
+using Sales.API.DataAccess;
 using Sales.API.Models;
 
 namespace Sales.API.DataAccessNoSql
 {
-    public class ItemDataNoSql
+    public class ItemDataNoSql: IDataAccessNoSql<Item>
     {
         private readonly IMongoCollection<Item> _collection;
 
@@ -20,13 +21,13 @@ namespace Sales.API.DataAccessNoSql
             _collection = mongoDatabase.GetCollection<Item>(salesDatabaseSetting.Value.ItemCollection);
         }
 
-        public async Task<List<Item>> GetItemsAsync() => await _collection.Find(x => true).ToListAsync();
+        public async Task<List<Item>> GetManyAsync() => await _collection.Find(x => true).ToListAsync();
 
-        public async Task<Item?> GetItemAsync(string id) => await _collection.Find(x => x.Id == id).FirstOrDefaultAsync();
+        public async Task<Item?> GetAsync(string id) => await _collection.Find(x => x.Id == id).FirstOrDefaultAsync();
         
-        public async Task CreateItemAsync(Item item) => await _collection.InsertOneAsync(item);
+        public async Task CreateAsync(Item item) => await _collection.InsertOneAsync(item);
 
-        public async Task<Item> UpdateItemAsync(string id, Item item)
+        public async Task<Item> UpdateAsync(string id, Item item)
         {
             var findItem = _collection.Find(x=>x.Id == id).FirstOrDefaultAsync();
             if(findItem == null)
@@ -36,7 +37,7 @@ namespace Sales.API.DataAccessNoSql
             return item;
         }
 
-        public async Task DeleteItemAsync(string id)
+        public async Task DeleteAsync(string id)
         {
             await _collection.DeleteOneAsync(x=>x.Id == id);
         }

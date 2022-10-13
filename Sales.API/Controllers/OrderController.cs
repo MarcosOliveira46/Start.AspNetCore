@@ -13,11 +13,11 @@ namespace Sales.API.Controllers
     [Route("api/[controller]")]
     public class OrderController : ControllerBase
     {
-        private readonly OrderDataNoSql _orderDataAccess;
-        private readonly CustomerDataNoSql _customerDataAccess;
-        private readonly ItemDataNoSql _itemDataAccess;
+        private readonly IDataAccessNoSql<Order> _orderDataAccess;
+        private readonly IDataAccessNoSql<Customer> _customerDataAccess;
+        private readonly IDataAccessNoSql<Item> _itemDataAccess;
 
-        public OrderController(OrderDataNoSql orderDataAccess, CustomerDataNoSql customerDataAccess, ItemDataNoSql itemDataAccess)
+        public OrderController(IDataAccessNoSql<Order> orderDataAccess, IDataAccessNoSql<Customer> customerDataAccess, IDataAccessNoSql<Item> itemDataAccess)
         {
             this._orderDataAccess = orderDataAccess;
             this._customerDataAccess = customerDataAccess;
@@ -28,7 +28,7 @@ namespace Sales.API.Controllers
         [HttpGet("{Id}")]
         public async Task<IActionResult> Get(string Id)
         {
-            var model = await _orderDataAccess.GetOrderAsync(Id);
+            var model = await _orderDataAccess.GetAsync(Id);
 
             if(model == null)
                 return NotFound();
@@ -39,7 +39,7 @@ namespace Sales.API.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var model = await _orderDataAccess.GetOrdersAsync();
+            var model = await _orderDataAccess.GetManyAsync();
             if(model == null)
                 return NotFound();
                 
@@ -55,7 +55,7 @@ namespace Sales.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var customer = await _customerDataAccess.GetCustomerAsync(inputModel.CustomerId);
+            var customer = await _customerDataAccess.GetAsync(inputModel.CustomerId);
 
             if(customer == null)
                 return NotFound(customer);
@@ -64,7 +64,7 @@ namespace Sales.API.Controllers
 
             foreach (var itemDict in inputModel.Items)
             {
-                var item = await _itemDataAccess.GetItemAsync(itemDict.Key);
+                var item = await _itemDataAccess.GetAsync(itemDict.Key);
                 
                 if(item == null || itemDict.Value <= 0)
                     return NotFound(item);
@@ -75,7 +75,7 @@ namespace Sales.API.Controllers
             if(model.Total == 0)
                 return NotFound(model);
 
-            await _orderDataAccess.CreateOrderAsync(model);
+            await _orderDataAccess.CreateAsync(model);
 
             return Ok(inputModel);
         }
@@ -86,21 +86,28 @@ namespace Sales.API.Controllers
             if(!ModelState.IsValid)
                 return BadRequest(ModelState);
             
-            var order = await _customerDataAccess.GetCustomerAsync(inputOrder.CustomerId);
+            var order = await _customerDataAccess.GetAsync(inputOrder.CustomerId);
             var model = new Order(inputOrder.Vendor, order);
 
             foreach(var itemDic in inputOrder.Items)
             {
-                var item = await _itemDataAccess.GetItemAsync(itemDic.Key);
+                var item = await _itemDataAccess.GetAsync(itemDic.Key);
                 model.AddOrderItem(new OrderItem(item, itemDic.Value));
             }
 
-            var modelUpdate = await _orderDataAccess.UpdateOrderAsync(Id, model);
+            var modelUpdate = await _orderDataAccess.UpdateAsync(Id, model);
             
             if(modelUpdate == null)
                 return NotFound();
             
             return Ok(model);
+        }
+
+        [HttpDelete("{Id}")]
+        public async Task<IActionResult> Delete(string Id)
+        {
+            await _orderDataAccess.DeleteAsync(Id);
+            return NoContent();
         }
     }
 }

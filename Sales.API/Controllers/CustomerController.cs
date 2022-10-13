@@ -15,9 +15,9 @@ namespace Sales.API.Controllers
     [Route("api/[controller]")]
     public class CustomerController : ControllerBase
     {
-        private readonly CustomerDataNoSql _context;
+        private readonly IDataAccessNoSql<Customer> _context;
 
-        public CustomerController(CustomerDataNoSql context)
+        public CustomerController(IDataAccessNoSql<Customer> context)
         {
             _context = context;
         }
@@ -25,7 +25,7 @@ namespace Sales.API.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var customers = await _context.GetCustomersAsync();
+            var customers = await _context.GetManyAsync();
 
             return Ok(customers);
         }
@@ -34,7 +34,7 @@ namespace Sales.API.Controllers
         [Route("{id}")]
         public async Task<IActionResult> Get(string id)
         {
-            var customer = await _context.GetCustomerAsync(id);
+            var customer = await _context.GetAsync(id);
 
             if (customer == null)
             {
@@ -55,7 +55,7 @@ namespace Sales.API.Controllers
             var model = new Customer(inputModel.Name, inputModel.Email, inputModel.Phone, inputModel.Identity);
             model.Age = inputModel.Age;            
             
-            await _context.CreateCustomerAsync(model);
+            await _context.CreateAsync(model);
 
             return CreatedAtAction(nameof(Get),new {id = model.Id},model);
         }
@@ -66,7 +66,7 @@ namespace Sales.API.Controllers
         {
             var customer = new Customer(InputCustomer.Name, InputCustomer.Email, InputCustomer.Phone, InputCustomer.Identity);
             customer.Id = Id;
-            var client = _context.UpdateCustomerAsync(Id, customer);
+            var client = _context.UpdateAsync(Id, customer);
             if(client == null)
                 return NotFound();
 
@@ -77,7 +77,7 @@ namespace Sales.API.Controllers
         [Route("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            await _context.DeleteCustomerAsync(id);
+            await _context.DeleteAsync(id);
             return NoContent();
         }
     }

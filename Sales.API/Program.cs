@@ -15,9 +15,9 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.Configure<SalesDatabaseSetting>(builder.Configuration.GetSection("SalesDatabase"));
 
-builder.Services.AddScoped<ItemDataNoSql, ItemDataNoSql>();
-builder.Services.AddScoped<CustomerDataNoSql, CustomerDataNoSql>();
-builder.Services.AddScoped<OrderDataNoSql, OrderDataNoSql>();
+builder.Services.AddScoped<IDataAccess<Item>, ItemDataNoSql>();
+builder.Services.AddScoped<IDataAccess<Customer>, CustomerDataNoSql>();
+builder.Services.AddScoped<IDataAccess<Order>, OrderDataNoSql>();
 
 var app = builder.Build();
 

@@ -21,17 +21,17 @@ namespace Sales.API.Controllers
     [Route("api/[controller]")]
     public class ItemController : ControllerBase
     {
-        private readonly ItemDataNoSql itemDataAccess;
+        private readonly IDataAccessNoSql<Item> _itemDataAccess;
 
-        public ItemController(ItemDataNoSql itemDataAccess)
+        public ItemController(IDataAccessNoSql<Item> itemDataAccess)
         {
-            this.itemDataAccess = itemDataAccess;
+            this._itemDataAccess = itemDataAccess;
         }
 
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var items = await itemDataAccess.GetItemsAsync();
+            var items = await _itemDataAccess.GetManyAsync();
 
             return Ok(items);
         }
@@ -40,7 +40,7 @@ namespace Sales.API.Controllers
         [Route("{id}")]
         public async Task<IActionResult> Get(string id)
         {
-            var item = await itemDataAccess.GetItemAsync(id);
+            var item = await _itemDataAccess.GetAsync(id);
 
             if (item == null)
             {
@@ -58,7 +58,7 @@ namespace Sales.API.Controllers
 
             var model = new Item(itemInputModel.Name, itemInputModel.Price);
 
-            await itemDataAccess.CreateItemAsync(model);
+            await _itemDataAccess.CreateAsync(model);
 
             return CreatedAtAction(nameof(Get), new {id = model.Id} ,itemInputModel);
         }
@@ -69,7 +69,7 @@ namespace Sales.API.Controllers
         {
             var item = new Item(itemInput.Name,itemInput.Price);
             item.Id = id;
-            var model = await itemDataAccess.UpdateItemAsync(id, item);
+            var model = await _itemDataAccess.UpdateAsync(id, item);
 
             if (model != null)
                 return Ok(model);
@@ -81,7 +81,7 @@ namespace Sales.API.Controllers
         [Route("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            await itemDataAccess.DeleteItemAsync(id);
+            await _itemDataAccess.DeleteAsync(id);
             return NoContent();
         }
     }
