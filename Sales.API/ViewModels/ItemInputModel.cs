@@ -10,7 +10,7 @@ namespace Sales.API.ViewModels
     {
         [Required(ErrorMessage = "Name is required")]
         public string Name { get; set; }
-        [Range(0.1, 7922800000000000000, ErrorMessage = "Price cannot be less than zero")]
+        [Range(0.01, 7922800000000000000, ErrorMessage = "Price cannot be less than zero")]
         public decimal Price { get; set; }
     }
 }

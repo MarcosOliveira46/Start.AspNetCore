@@ -66,6 +66,7 @@ namespace Sales.API.Controllers
         {
             var customer = new Customer(InputCustomer.Name, InputCustomer.Email, InputCustomer.Phone, InputCustomer.Identity);
             customer.Id = Id;
+            customer.Age = InputCustomer.Age;
             var client = _context.UpdateAsync(Id, customer);
             if(client == null)
                 return NotFound();

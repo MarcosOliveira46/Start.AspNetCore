@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Sales.API.DataAccess;
 using Sales.API.DataAccessNoSql;
 using Sales.API.Models;
 using Sales.API.ViewModels;
@@ -66,14 +67,17 @@ namespace Sales.API.Controllers
             {
                 var item = await _itemDataAccess.GetAsync(itemDict.Key);
                 
-                if(item == null || itemDict.Value <= 0)
+                if(item == null)
                     return NotFound(item);
+
+                if(itemDict.Value <= 0)
+                    return BadRequest("The value of Item cannot be less than zero");
 
                 model.AddOrderItem(new OrderItem(item, itemDict.Value));
             }
 
             if(model.Total == 0)
-                return NotFound(model);
+                    return BadRequest("The value of Order cannot be less than zero");
 
             await _orderDataAccess.CreateAsync(model);
 
