@@ -53,33 +53,36 @@ namespace Sales.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] ItemInputModel itemInputModel)
         {
+            if(!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             var model = new Item(itemInputModel.Name, itemInputModel.Price);
-            
+
             await itemDataAccess.CreateItemAsync(model);
 
-            return Ok(itemInputModel);
+            return CreatedAtAction(nameof(Get), new {id = model.Id} ,itemInputModel);
         }
 
-        // [HttpPut]
-        // [Route("{id}")]
-        // public async Task<IActionResult> Put(int id, [FromBody] Item itemModel)
-        // {
-        //     var model = await itemDataAccess.UpdateOne(id, itemModel);
+        [HttpPut]
+        [Route("{id}")]
+        public async Task<IActionResult> Put(string id, [FromBody] ItemInputModel itemInput)
+        {
+            var item = new Item(itemInput.Name,itemInput.Price);
+            item.Id = id;
+            var model = await itemDataAccess.UpdateItemAsync(id, item);
 
-        //     if (model != null)
-        //     {
-        //         return Ok(model);
-        //     }
+            if (model != null)
+                return Ok(model);
 
-        //     return NotFound();
-        // }
+            return NotFound();
+        }
 
-        // [HttpDelete]
-        // [Route("{id}")]
-        // public async Task<IActionResult> Delete(int id)
-        // {
-        //     await itemDataAccess.DeleteOne(id);
-        //     return NoContent();
-        // }
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            await itemDataAccess.DeleteItemAsync(id);
+            return NoContent();
+        }
     }
 }

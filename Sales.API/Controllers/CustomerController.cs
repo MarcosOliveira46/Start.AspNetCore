@@ -52,54 +52,33 @@ namespace Sales.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            var model = new Customer(inputModel.Name, inputModel.Email, inputModel.Phone, inputModel.Identity);            
+            var model = new Customer(inputModel.Name, inputModel.Email, inputModel.Phone, inputModel.Identity);
+            model.Age = inputModel.Age;            
             
             await _context.CreateCustomerAsync(model);
 
-            return Ok(inputModel);
+            return CreatedAtAction(nameof(Get),new {id = model.Id},model);
         }
 
-        // [HttpPut]
-        // [Route("{id}")]
-        // public async Task<IActionResult> Put(int id, [FromBody] Customer Cliente)
-        // {
-        //     var cliente = await _context.Customers.Where(x => x.Id == id && x.Active)
-        //         .FirstOrDefaultAsync();
+        [HttpPut]
+        [Route("{Id}")]
+        public async Task<IActionResult> Put(string Id, [FromBody] CustomerInputModel InputCustomer)
+        {
+            var customer = new Customer(InputCustomer.Name, InputCustomer.Email, InputCustomer.Phone, InputCustomer.Identity);
+            customer.Id = Id;
+            var client = _context.UpdateCustomerAsync(Id, customer);
+            if(client == null)
+                return NotFound();
 
-        //     if (cliente != null)
-        //     {
-        //         cliente.Name = Cliente.Name;
-        //         cliente.Age = Cliente.Age;
-        //         cliente.Active = Cliente.Active;
-        //         cliente.Identity = Cliente.Identity;
+            return Ok(customer);
+        }
 
-        //         _context.Customers.Update(cliente);
-        //         await _context.SaveChangesAsync();
-                
-        //         return Ok(Cliente);
-        //     }
-
-        //     return NotFound();
-        // }
-
-        // [HttpDelete]
-        // [Route("{id}")]
-        // public async Task<IActionResult> Delete(int id)
-        // {
-        //     var cliente = await _context.Customers.Where(x => x.Id == id && x.Active)
-        //         .FirstOrDefaultAsync();
-
-        //     if (cliente != null)
-        //     {
-        //         cliente.Active = false;
-
-        //         _context.Customers.Update(cliente);
-        //         await _context.SaveChangesAsync();
-                
-        //         return NoContent();
-        //     }
-
-        //     return NotFound();
-        // }
+        [HttpDelete]
+        [Route("{id}")]
+        public async Task<IActionResult> Delete(string id)
+        {
+            await _context.DeleteCustomerAsync(id);
+            return NoContent();
+        }
     }
 }

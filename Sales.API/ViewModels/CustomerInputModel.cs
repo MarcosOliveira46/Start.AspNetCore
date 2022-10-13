@@ -16,7 +16,7 @@ namespace Sales.API.ViewModels
         public string Email { get; set; }
 
         public int Age { get; set; }
-        
+        [Required(ErrorMessage = "Identity is required")]
         public string Identity { get; set; }
     }
 }
