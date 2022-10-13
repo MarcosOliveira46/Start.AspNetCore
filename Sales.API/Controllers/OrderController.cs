@@ -86,14 +86,25 @@ namespace Sales.API.Controllers
             if(!ModelState.IsValid)
                 return BadRequest(ModelState);
             
-            var order = await _customerDataAccess.GetAsync(inputOrder.CustomerId);
-            var model = new Order(inputOrder.Vendor, order);
+            var customer = await _customerDataAccess.GetAsync(inputOrder.CustomerId);
+            
+            if(customer == null)
+                return NotFound(customer);
+                
+            var model = new Order(inputOrder.Vendor, customer);
 
             foreach(var itemDic in inputOrder.Items)
             {
                 var item = await _itemDataAccess.GetAsync(itemDic.Key);
+
+                if(item == null || itemDic.Value <= 0)
+                    return NotFound(item);
+
                 model.AddOrderItem(new OrderItem(item, itemDic.Value));
             }
+            
+            if(model.Total == 0)
+                return NotFound(model);
 
             var modelUpdate = await _orderDataAccess.UpdateAsync(Id, model);
             
